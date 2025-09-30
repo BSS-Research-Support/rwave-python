@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "rwave-api"
+version = "0.1.0"
+description = "API for the rWave USB device"
+authors = [
+    "M. Stokroos <m.stokroos@rug.nl>"
+]
+maintainers = [
+    "M. Stokroos <m.stokroos@rug.nl>"
+]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+keywords = ["neuroConn", "api", "usb", "hid", "psychology", "wave-generator"]
+homepage = ""
+
+[tool.poetry.urls]
+Repository = ""
+
+[tool.poetry.dependencies]
+python = "^3.8"
+hidapi = "~0.14.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
