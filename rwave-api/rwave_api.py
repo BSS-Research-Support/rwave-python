@@ -71,16 +71,18 @@ class Command(IntEnum):
 class RemoteWave:
     """Class for communicating with the rWave device over HID."""
 
-    RX_BUF_SIZE = 64  # bytes
-    RX_TIME_OUT = 20  # ms
-    HZ = 10000        # system sample rate in Hz
+    RX_BUF_SIZE = 64    # bytes
+    RX_TIME_OUT = 20    # ms
+    HZ = 10000    # system sample rate in Hz
 
-    FREQ_MIN = 0      # frequency range
+    FREQ_MIN = 0    # frequency range
     FREQ_MAX = 200
-    PHASE_MIN = 0     # phase range
+    PHASE_MIN = 0    # phase range
     PHASE_MAX = 360
-    AMPL_MIN = 0
-    AMPL_MAX = 4095
+    AMPL_MIN = 0    # amplitude [mA]
+    AMPL_MAX = 2.0
+    CURR_MIN = -4.0    # output current [mA]
+    CURR_MAX = 4.0
 
     def __init__(self, log_level: int = logging.CRITICAL):
         """Initialize rWave."""
@@ -113,7 +115,7 @@ class RemoteWave:
             )
         return found
 
-    def attach_name(self, matching_key="TinyUSB Device"):
+    def attach(self, matching_key="TinyUSB Device"):
         """Attach rWave device by matching part of its product name."""
         for d in hid.enumerate():
             if matching_key.lower() in (d.get("product_string") or "").lower():
@@ -154,10 +156,6 @@ class RemoteWave:
         logging.info("rWave successfully detached.")
         return True
 
-    # -------------------------------------------------------------------------
-    # DATA I/O METHODS
-    # -------------------------------------------------------------------------
-
     @requires_device
     def wait_for_ack(self, timeout_ms):
         """Wait for incoming packet based on polling.
@@ -181,25 +179,13 @@ class RemoteWave:
                 return -1, t_elapsed
 
     # -------------------------------------------------------------------------
-    # DEVICE COMMANDS
+    # DATA I/O METHODS
     # -------------------------------------------------------------------------
 
     @requires_device
-    def start(self):
-        """Send wave parameters including start command."""
+    def _send_pkg(self):
+        """Send hid package to device"""
         try:
-            self.hid_out_pkg[Param.CMD_CODE] = Command.WAVE_START
-            self.device.write([0x00] + self.hid_out_pkg) # no Report ID if first byte is zero.
-            return True
-        except IOError as e:
-            logging.error("Error sending data: %s", e)
-            return False
-
-    @requires_device
-    def stop(self):
-        """Send wave stop command."""
-        try:
-            self.hid_out_pkg[Param.CMD_CODE] = Command.WAVE_STOP
             self.device.write([0x00] + self.hid_out_pkg) # no Report ID if first byte is zero.
             return True
         except IOError as e:
@@ -234,6 +220,16 @@ class RemoteWave:
     # -------------------------------------------------------------------------
     # PRIVATE LOW-LEVEL SETTERS
     # -------------------------------------------------------------------------
+    
+    @requires_device
+    def _set_cmd_start(self):
+        """Set start command"""
+        self.hid_out_pkg[Param.CMD_CODE] = Command.WAVE_START
+
+    @requires_device
+    def _set_cmd_stop(self):
+        """Set stop command"""
+        self.hid_out_pkg[Param.CMD_CODE] = Command.WAVE_STOP
 
     @requires_device
     def _set_dc_offset(self, dc_offset: int) -> None:
@@ -328,6 +324,15 @@ class RemoteWave:
     # -------------------------------------------------------------------------
 
     @requires_device
+    def write_dc_current(self, current: float) -> None:
+        """Set dc current in mA's."""
+        if not (self.CURR_MIN <= current <= self.CURR_MAX):
+            raise ValueError(f"DC-current {current} mA out of range \
+                             ({self.CURR_MIN}..{self.CURR_MAX})")
+        dac_units = round(511.875*(current+4.0))
+        self._set_dc_offset(dac_units)
+
+    @requires_device
     def write_freq_theta(self, frequency: float) -> None:
         """Set frequency for theta wave in Hz."""
         if not (self.FREQ_MIN <= frequency <= self.FREQ_MAX):
@@ -416,3 +421,52 @@ class RemoteWave:
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
         value = round(phase_angle * (2**16 / 360.0))
         self._set_phase_stop_w3(value)
+
+    @requires_device
+    def write_ampl_theta(self, amplitude: float) -> None:
+        """Set the theta current amplitude in mA's."""
+        if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
+            raise ValueError(f"theta wave amplitide {amplitude} mA out of range \
+                             ({self.AMPL_MIN}..{self.AMPL_MAX})")
+        dac_units = round(1023.5*(amplitude))
+        self._set_ampl_w1(dac_units)
+
+    @requires_device
+    def write_ampl_gamma1(self, amplitude: float) -> None:
+        """Set the gamma1 current amplitude in mA's."""
+        if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
+            raise ValueError(f"gamma1 wave amplitide {amplitude} mA out of range \
+                             ({self.AMPL_MIN}..{self.AMPL_MAX})")
+        dac_units = round(1023.5*(amplitude))
+        self._set_ampl_w2(dac_units)
+
+    @requires_device
+    def write_ampl_gamma2(self, amplitude: float) -> None:
+        """Set the gamma2 current amplitude in mA's."""
+        if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
+            raise ValueError(f"gamma2 wave amplitide {amplitude} mA out of range \
+                             ({self.AMPL_MIN}..{self.AMPL_MAX})")
+        dac_units = round(1023.5*(amplitude))
+        self._set_ampl_w3(dac_units)
+
+    @requires_device
+    def start(self):
+        """Set start command and send package out."""
+        self._set_cmd_start()
+        self._send_pkg()
+
+    @requires_device
+    def stop(self):
+        """Set stop command and send package out."""
+        self._set_cmd_stop()
+        self._send_pkg()    
+
+    @requires_device
+    def inverted(self):
+        """Inverted output wave."""
+        self._set_invert_output(1)
+
+    @requires_device
+    def normal(self):
+        """Non inverted output wave."""
+        self._set_invert_output(0)

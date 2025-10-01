@@ -124,7 +124,7 @@ from rwave_api import RemoteWave
 mywave = RemoteWave()
 #print(mywave.scan())
 
-mywave.attach_name()
+mywave.attach()
 
 input("Press Enter to continue...")
 
@@ -133,7 +133,7 @@ try:
 except ValueError as e:
     logging.error("Invalid parameter: %s", e)
 
-mywave.wave_start()
+mywave.start()
 
 mywave.close()
 
