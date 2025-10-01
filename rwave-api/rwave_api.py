@@ -68,7 +68,7 @@ class Command(IntEnum):
     WAVE_START = 1
 
 
-class rWave:
+class RemoteWave:
     """Class for communicating with the rWave device over HID."""
 
     RX_BUF_SIZE = 64  # bytes
@@ -87,6 +87,124 @@ class rWave:
         self.device: hid.device | None = None
         self.hid_out_pkg: list[int] = [0x00] * 64
         logging.basicConfig(stream=sys.stderr, level=log_level)
+
+    # -------------------------------------------------------------------------
+    # DEVICE MANAGEMENT
+    # -------------------------------------------------------------------------
+
+    def scan(self, matching_key="TinyUSB Device"):
+        """Scan for plugged-in rWave devices.
+
+        Args:
+            matching_key (str): Substring to match in product name.
+
+        Returns:
+            list[dict]: Matching HID device info.
+        """
+        devices = hid.enumerate()
+        found = [
+            d for d in devices
+            if matching_key.lower() in (d.get("product_string") or "").lower()
+        ]
+        for d in found:
+            logging.info(
+                "Device found: %s (s/n: %s)",
+                d.get("product_string"), d.get("serial_number")
+            )
+        return found
+
+    def attach_name(self, matching_key="TinyUSB Device"):
+        """Attach rWave device by matching part of its product name."""
+        for d in hid.enumerate():
+            if matching_key.lower() in (d.get("product_string") or "").lower():
+                try:
+                    self.device = hid.device()
+                    self.device.open_path(d["path"])
+                    self.device.set_nonblocking(True)
+                    logging.info("Attached device: %s (s/n: %s)",
+                                 d.get("product_string"), d.get("serial_number"))
+                    return True
+                except IOError as e:
+                    logging.error("Failed to attach device: %s", e)
+                    return False
+        logging.warning("No device matches the product name '%s'", matching_key)
+        return False
+
+    def attach_id(self, path):
+        """Attach rWave device by matching its unique path."""
+        for d in hid.enumerate():
+            if path in d["path"]:
+                try:
+                    self.device = hid.device()
+                    self.device.open_path(d["path"])
+                    self.device.set_nonblocking(True)
+                    logging.info("Attached device: %s (s/n: %s)",
+                                 d.get("product_string"), d.get("serial_number"))
+                    return True
+                except IOError as e:
+                    logging.error("Failed to attach device: %s", e)
+                    return False
+        logging.warning("No device found with matching path.")
+        return False
+
+    @requires_device
+    def close(self):
+        """Close the currently attached rWave device."""
+        self.device.close()
+        logging.info("rWave successfully detached.")
+        return True
+
+    # -------------------------------------------------------------------------
+    # DATA I/O METHODS
+    # -------------------------------------------------------------------------
+
+    @requires_device
+    def wait_for_ack(self, timeout_ms):
+        """Wait for incoming packet based on polling.
+
+        Args:
+            timeout_ms (int | None): Timeout in ms (None = infinite).
+
+        Returns:
+            tuple[int, int]: (event_code, elapsed_ms) or (-1, elapsed_ms) on timeout.
+        """
+        t_start = time.time()
+        # Poll for event
+        while True:
+            last_event = self.device.read(self.RX_BUF_SIZE, self.RX_TIME_OUT)
+            t_elapsed = int((time.time() - t_start) * 1000)
+
+            if last_event and (last_event[0] == 0xAA):
+                return last_event, t_elapsed
+
+            if timeout_ms is not None and t_elapsed >= timeout_ms:
+                return -1, t_elapsed
+
+    # -------------------------------------------------------------------------
+    # DEVICE COMMANDS
+    # -------------------------------------------------------------------------
+
+    @requires_device
+    def start(self):
+        """Send wave parameters including start command."""
+        try:
+            self.hid_out_pkg[Param.CMD_CODE] = Command.WAVE_START
+            self.device.write([0x00] + self.hid_out_pkg) # no Report ID if first byte is zero.
+            return True
+        except IOError as e:
+            logging.error("Error sending data: %s", e)
+            return False
+
+    @requires_device
+    def stop(self):
+        """Send wave stop command."""
+        try:
+            self.hid_out_pkg[Param.CMD_CODE] = Command.WAVE_STOP
+            self.device.write([0x00] + self.hid_out_pkg) # no Report ID if first byte is zero.
+            return True
+        except IOError as e:
+            logging.error("Error sending data: %s", e)
+            return False
 
     # -------------------------------------------------------------------------
     # INTERNAL HELPERS (PRIVATE)
@@ -213,7 +331,8 @@ class rWave:
     def write_freq_theta(self, frequency: float) -> None:
         """Set frequency for theta wave in Hz."""
         if not (self.FREQ_MIN <= frequency <= self.FREQ_MAX):
-            raise ValueError(f"Frequency {frequency} Hz out of range ({self.FREQ_MIN}..{self.FREQ_MAX})")
+            raise ValueError(f"Frequency {frequency} Hz out of range \
+                             ({self.FREQ_MIN}..{self.FREQ_MAX})")
         ftw = round(2**32 * frequency / self.HZ)
         self._set_freq_tuning_word_w1(ftw)
 
@@ -221,7 +340,8 @@ class rWave:
     def write_freq_gamma1(self, frequency: float) -> None:
         """Set frequency for gamma1 wave in Hz."""
         if not (self.FREQ_MIN <= frequency <= self.FREQ_MAX):
-            raise ValueError(f"Frequency {frequency} Hz out of range ({self.FREQ_MIN}..{self.FREQ_MAX})")
+            raise ValueError(f"Frequency {frequency} Hz out of range \
+                             ({self.FREQ_MIN}..{self.FREQ_MAX})")
         ftw = round(2**32 * frequency / self.HZ)
         self._set_freq_tuning_word_w2(ftw)
 
@@ -229,41 +349,70 @@ class rWave:
     def write_freq_gamma2(self, frequency: float) -> None:
         """Set frequency for gamma2 wave in Hz."""
         if not (self.FREQ_MIN <= frequency <= self.FREQ_MAX):
-            raise ValueError(f"Frequency {frequency} Hz out of range ({self.FREQ_MIN}..{self.FREQ_MAX})")
+            raise ValueError(f"Frequency {frequency} Hz out of range \
+                             ({self.FREQ_MIN}..{self.FREQ_MAX})")
         ftw = round(2**32 * frequency / self.HZ)
         self._set_freq_tuning_word_w3(ftw)
 
+    @requires_device
     def write_phase_theta(self, phase_angle: float) -> None:
         """Set phase angle for theta in degrees."""
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
-            raise ValueError(f"Phase {phase_angle}° out of range ({self.PHASE_MIN}..{self.PHASE_MAX})")
+            raise ValueError(f"Phase {phase_angle}° out of range \
+                             ({self.PHASE_MIN}..{self.PHASE_MAX})")
         value = round(phase_angle * (2**16 / 360.0))
         self._set_phase_w1(value)
 
+    @requires_device
     def write_phase_gamma1(self, phase_angle: float) -> None:
         """Set phase angle for gamma1 in degrees."""
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
-            raise ValueError(f"Phase {phase_angle}° out of range ({self.PHASE_MIN}..{self.PHASE_MAX})")
+            raise ValueError(f"Phase {phase_angle}° out of range \
+                             ({self.PHASE_MIN}..{self.PHASE_MAX})")
         value = round(phase_angle * (2**16 / 360.0))
         self._set_phase_w2(value)
 
+    @requires_device
     def write_phase_gamma2(self, phase_angle: float) -> None:
         """Set phase angle for gamma2 in degrees."""
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
-            raise ValueError(f"Phase {phase_angle}° out of range ({self.PHASE_MIN}..{self.PHASE_MAX})")
+            raise ValueError(f"Phase {phase_angle}° out of range \
+                             ({self.PHASE_MIN}..{self.PHASE_MAX})")
         value = round(phase_angle * (2**16 / 360.0))
         self._set_phase_w3(value)
 
+    @requires_device
     def write_start_phase_gamma1(self, phase_angle: float) -> None:
         """Set start phase of gamma1 in degrees of theta."""
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
-            raise ValueError(f"Start phase {phase_angle}° out of range ({self.PHASE_MIN}..{self.PHASE_MAX})")
+            raise ValueError(f"Start phase {phase_angle}° out of range \
+                             ({self.PHASE_MIN}..{self.PHASE_MAX})")
         value = round(phase_angle * (2**16 / 360.0))
         self._set_phase_start_w2(value)
 
+    @requires_device
     def write_start_phase_gamma2(self, phase_angle: float) -> None:
         """Set start phase of gamma2 in degrees of theta."""
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
-            raise ValueError(f"Start phase {phase_angle}° out of range ({self.PHASE_MIN}..{self.PHASE_MAX})")
+            raise ValueError(f"Start phase {phase_angle}° out of range \
+                             ({self.PHASE_MIN}..{self.PHASE_MAX})")
         value = round(phase_angle * (2**16 / 360.0))
         self._set_phase_start_w3(value)
+
+    @requires_device
+    def write_stop_phase_gamma1(self, phase_angle: float) -> None:
+        """Set stop phase of gamma1 in degrees of theta."""
+        if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
+            raise ValueError(f"Stop phase {phase_angle}° out of range \
+                             ({self.PHASE_MIN}..{self.PHASE_MAX})")
+        value = round(phase_angle * (2**16 / 360.0))
+        self._set_phase_stop_w2(value)
+
+    @requires_device
+    def write_stop_phase_gamma2(self, phase_angle: float) -> None:
+        """Set stop phase of gamma2 in degrees of theta."""
+        if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
+            raise ValueError(f"Stop phase {phase_angle}° out of range \
+                             ({self.PHASE_MIN}..{self.PHASE_MAX})")
+        value = round(phase_angle * (2**16 / 360.0))
+        self._set_phase_stop_w3(value)

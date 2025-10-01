@@ -1,4 +1,4 @@
-# rWave-api - A Python API for rWave - remote wave generator for the neuroConn tDCS
+# rwave-api - A Python API for rWave (remote wave generator for the neuroConn tDCS)
 
 ## 1. About
 This repository contains the API to communicate with the rWave USB-device, developed by the Research Support group of the faculty of Behavioral and Social Science from the University of Groningen. *rWave* is a wave generator to be used with the remote input from the neuroConn TDCS.
@@ -9,9 +9,9 @@ The *rwave-api* API uses [HIDAPI](https://pypi.org/project/hidapi/), a cython mo
 ## 3. Install
 Install pyevt (and hidapi) with:
 
-`pip install pyevt` or
+`pip install rwavepy` or
 
-`pip install --user pyevt` on managed computers.
+`pip install --user rwavepy` on managed computers.
 
 ## 4. Device Permission for Linux
 Permission for using EVT (HID) devices should be given by adding the next lines to a file, for example named:
@@ -35,9 +35,9 @@ If this is not the case, add the user to the `plugdev` group by typing:
 
 `$ sudo usermod -a -G plugdev username`
 
-## 5. rWave API Summary
+## 5. RemoteWave API Summary
 
-The rWave class provides a Python interface for controlling the rWave device via USB HID.
+The RemoteWave class provides a Python interface for controlling the rWave device via USB HID.
 Public methods are organized into frequency, phase, amplitude, and control APIs.
 
 ### Frequency Control
@@ -96,9 +96,10 @@ Set amplitude for the gamma1 wave.
 
 write_ampl_gamma2(amplitude: int) -> None
 Set amplitude for the gamma2 wave.
+```
 
 ### Device & Output Control
-
+```
 open_device() -> None
 Open connection to the rWave device.
 
@@ -118,9 +119,9 @@ Send the current parameter buffer (hid_out_pkg) to the device.
 ## 6. Python coding examples
 
 ```
-from rwave_api import rWave
+from rwave_api import RemoteWave
 
-mywave = rWave()
+mywave = RemoteWave()
 #print(mywave.scan())
 
 mywave.attach_name()
@@ -128,7 +129,7 @@ mywave.attach_name()
 input("Press Enter to continue...")
 
 try:
-    rwave.write_freq_theta(3.0)
+    mywave.write_freq_theta(3.0)
 except ValueError as e:
     logging.error("Invalid parameter: %s", e)
 
