@@ -31,36 +31,40 @@ class Param(IntEnum):
     FTW1_3 = 10 # byte 10, 32 bit frequency tuning word (msb), channel 1
     PH1_0 = 11 # byte 11, 16 bit phase offset (lsb), channel 1
     PH1_1 = 12 # byte 12, 16 bit phase offset (msb), channel 1
-    AMPL1_0 = 13 # byte 13, 16 bit amplitude (lsb), channel 1
-    AMPL1_1 = 14 # byte 14, 16 bit amplitude (msb), channel 1
+    AMPL1_0 = 13 # byte 13, 12 bit amplitude (lsb), channel 1
+    AMPL1_1 = 14 # byte 14, 12 bit amplitude (msb), channel 1
     FTW2_0 = 15 # byte 15, 32 bit frequency tuning word (lsb), channel 2
     FTW2_1 = 16 # byte 16, ,,
     FTW2_2 = 17 # byte 17, ,,
     FTW2_3 = 18 # byte 18, 32 bit frequency tuning word (msb), channel 2
     PH2_0 = 19 # byte 19, 16 bit phase offset (lsb), channel 2
     PH2_1 = 20 # byte 20, 16 bit phase offset (msb), channel 2
-    AMPL2_0 = 21 # byte 21, 16 bit amplitude (lsb), channel 2
-    AMPL2_1 = 22 # byte 22, 16 bit amplitude (msb), channel 2
-    PH2_START_0 = 23 # byte 23, 16 bit start phase (lsb) for channel 2 in units of PH1
-    PH2_START_1 = 24 # byte 24, 16 bit start phase (msb) for channel 2 in units of PH1
-    PH2_STOP_0 = 25 # byte 25, 16 bit stop phase (lsb) for channel 2 in units of PH1
-    PH2_STOP_1 = 26 # byte 26, 16 bit stop phase (msb) for channel 2 in units of PH1
-    FTW3_0 = 27 # byte 27, 32 bit frequency tuning word (lsb), channel 3
-    FTW3_1 = 28 # byte 28
-    FTW3_2 = 29 # byte 29
-    FTW3_3 = 30 # byte 30, 32 bit frequency tuning word (msb), channel 3
-    PH3_0 = 31 # byte 31, 16 bit phase offset (lsb), channel 3
-    PH3_1 = 32 # byte 32, 16 bit phase offset (msb), channel 3
-    AMPL3_0 = 33 # byte 33, 16 bit amplitude (lsb), channel 3
-    AMPL3_1 = 34 # byte 34, 16 bit amplitude (msb), channel 3
-    PH3_START_0 = 35 # byte 35, 16 bit start phase (lsb) for channel 3 in units of PH1
-    PH3_START_1 = 36 # byte 36, 16 bit start phase (msb) for channel 3 in units of PH1
-    PH3_STOP_0 = 37 # byte 37, 16 bit stop phase (lsb) for channel 3 in units of PH1
-    PH3_STOP_1 = 38 # byte 38, 16 bit stop phase (msb) for channel 3 in units of PH1		
-    INV_OUTP = 39 # byte 39, 0=normal, 1=inverted output polarity
-    ENVELOPE = 40 # byte 40, 0=additive, 1=modulation
-    RAMP_PROFILE = 41 # byte 41, 0=linear, 1=
-    NRAMP_PER = 42 # byte 42, ramping in whole number of channel 1 periods, 0 is no ramping.    
+    AMPL2_0 = 21 # byte 21, 12 bit amplitude (lsb), channel 2
+    AMPL2_1 = 22 # byte 22, 12 bit amplitude (msb), channel 2
+    MIDX2_0 = 23 # byte 23, 16 bit modulation index (lsb), channel 2
+    MIDX2_1 = 24 # byte 24, 16 bit modulation index (msb), channel 2
+    PH2_START_0 = 25 # byte 25, 16 bit start phase (lsb) for channel 2 in units of PH1
+    PH2_START_1 = 26 # byte 26, 16 bit start phase (msb) for channel 2 in units of PH1
+    PH2_STOP_0 = 27 # byte 27, 16 bit stop phase (lsb) for channel 2 in units of PH1
+    PH2_STOP_1 = 28 # byte 28, 16 bit stop phase (msb) for channel 2 in units of PH1
+    FTW3_0 = 29 # byte 29, 32 bit frequency tuning word (lsb), channel 3
+    FTW3_1 = 30 # byte 30, ,,
+    FTW3_2 = 31 # byte 31, ,,
+    FTW3_3 = 32 # byte 32, 32 bit frequency tuning word (msb), channel 3
+    PH3_0 = 33 # byte 33, 16 bit phase offset (lsb), channel 3
+    PH3_1 = 34 # byte 34, 16 bit phase offset (msb), channel 3
+    AMPL3_0 = 35 # byte 35, 12 bit amplitude (lsb), channel 3
+    AMPL3_1 = 36 # byte 36, 12 bit amplitude (msb), channel 3
+    MIDX3_0 = 37 # byte 37, 16 bit modulation index (lsb), channel 3
+    MIDX3_1 = 38 # byte 38, 16 bit modulation index (msb), channel 3
+    PH3_START_0 = 39 # byte 39, 16 bit start phase (lsb) for channel 3 in units of PH1
+    PH3_START_1 = 40 # byte 40, 16 bit start phase (msb) for channel 3 in units of PH1
+    PH3_STOP_0 = 41 # byte 41, 16 bit stop phase (lsb) for channel 3 in units of PH1
+    PH3_STOP_1 = 42 # byte 42, 16 bit stop phase (msb) for channel 3 in units of PH1		
+    INV_OUTP = 43 # byte 43, 0=normal, 1=inverted output polarity
+    ENVELOPE = 44 # byte 44, 0=additive, 1=modulation
+    RAMP_PROFILE = 45 # byte 45, 0=linear, 1=
+    NRAMP_PER = 46 # byte 46, ramping in whole number of channel 1 periods, 0 is no ramping.    
     
 class Command(IntEnum):
     """HID command codes for the rWave device."""
@@ -80,9 +84,11 @@ class RemoteWave:
     PHASE_MIN = 0    # phase range
     PHASE_MAX = 360
     AMPL_MIN = 0    # amplitude [mA]
-    AMPL_MAX = 2.0
+    AMPL_MAX = 4.0
     CURR_MIN = -4.0    # output current [mA]
     CURR_MAX = 4.0
+    MDEPTH_MIN = 0
+    MDEPTH_MAX = 100.0
 
     def __init__(self, log_level: int = logging.CRITICAL):
         """Initialize rWave."""
@@ -268,6 +274,10 @@ class RemoteWave:
         self._set_12bit_param(Param.AMPL2_0, value)
 
     @requires_device
+    def _set_mod_index_w2(self, value: int) -> None:
+        self._set_16bit_param(Param.MIDX2_0, value)        
+
+    @requires_device
     def _set_phase_start_w2(self, value: int) -> None:
         self._set_16bit_param(Param.PH2_START_0, value)
 
@@ -403,28 +413,46 @@ class RemoteWave:
     def write_ampl_theta(self, amplitude: float) -> None:
         """Set the theta current amplitude in mA's."""
         if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
-            raise ValueError(f"theta wave amplitide {amplitude} mA out of range \
+            raise ValueError(f"theta wave amplitude {amplitude} mA out of range \
                              ({self.AMPL_MIN}..{self.AMPL_MAX})")
-        dac_units = round(1023.5*(amplitude))
+        dac_units = round(511.75*(amplitude))
         self._set_ampl_w1(dac_units)
 
     @requires_device
     def write_ampl_gamma1(self, amplitude: float) -> None:
         """Set the gamma1 current amplitude in mA's."""
         if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
-            raise ValueError(f"gamma1 wave amplitide {amplitude} mA out of range \
+            raise ValueError(f"gamma1 wave amplitude {amplitude} mA out of range \
                              ({self.AMPL_MIN}..{self.AMPL_MAX})")
-        dac_units = round(1023.5*(amplitude))
+        dac_units = round(511.75*(amplitude))
         self._set_ampl_w2(dac_units)
 
     @requires_device
     def write_ampl_gamma2(self, amplitude: float) -> None:
         """Set the gamma2 current amplitude in mA's."""
         if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
-            raise ValueError(f"gamma2 wave amplitide {amplitude} mA out of range \
+            raise ValueError(f"gamma2 wave amplitude {amplitude} mA out of range \
                              ({self.AMPL_MIN}..{self.AMPL_MAX})")
-        dac_units = round(1023.5*(amplitude))
+        dac_units = round(511.75*(amplitude))
         self._set_ampl_w3(dac_units)
+
+    @requires_device
+    def write_mdepth_gamma1(self, mod_depth: float) -> None:
+        """Set the gamma1 modulation depth in %."""
+        if not (self.MDEPTH_MIN <= mod_depth <= self.MDEPTH_MAX):
+            raise ValueError(f"gamma1 modulation depth {mod_depth} % out of range \
+                             ({self.MDEPTH_MIN}..{self.MDEPTH_MAX})")
+        dac_units = round(655.35*(mod_depth))
+        self._set_mod_index_w2(dac_units)
+
+    @requires_device
+    def write_mdepth_gamma2(self, mod_depth: float) -> None:
+        """Set the gamma2 modulation depth in %."""
+        if not (self.MDEPTH_MIN <= mod_depth <= self.MDEPTH_MAX):
+            raise ValueError(f"gamma2 modulation depth {mod_depth} % out of range \
+                             ({self.MDEPTH_MIN}..{self.MDEPTH_MAX})")
+        mod_index = round(655.35*(mod_depth))
+        self._set_mod_index_w2(mod_index)
 
     # --- Control ---
     @requires_device
