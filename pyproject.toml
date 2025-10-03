@@ -10,7 +10,7 @@ maintainers = [
 ]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-keywords = ["neuroConn", "api", "usb", "hid", "psychology", "wave-generator"]
+keywords = ["neuroConn", "wave-generator", "api", "usb", "hid", "experimental-psychology"]
 homepage = ""
 
 [tool.poetry.urls]

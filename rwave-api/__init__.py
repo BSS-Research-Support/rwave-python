@@ -2,4 +2,4 @@
 
 __version__ = '0.1.0'
 
-from .rwave_api import rWave
+from .rwave_api import RemoteWave

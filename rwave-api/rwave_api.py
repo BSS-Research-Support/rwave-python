@@ -296,29 +296,6 @@ class RemoteWave:
     def _set_phase_stop_w3(self, value: int) -> None:
         self._set_16bit_param(Param.PH3_STOP_0, value)
 
-    # --- Misc ---
-    @requires_device
-    def _set_invert_output(self, invert: int) -> None:
-        if invert not in (0, 1):
-            raise ValueError("invert must be 0 (normal) or 1 (inverted)")
-        self.hid_out_pkg[Param.INV_OUTP] = invert
-
-    @requires_device
-    def _set_envelope(self, envelope: int) -> None:
-        if envelope not in (0, 1):
-            raise ValueError("envelope must be 0 (additive) or 1 (modulation)")
-        self.hid_out_pkg[Param.ENVELOPE] = envelope
-
-    @requires_device
-    def _set_ramping_profile(self, profile: int) -> None:
-        if profile not in (0, 1):
-            raise ValueError("ramping_profile must be 0 (linear) or 1 (...)")
-        self.hid_out_pkg[Param.RAMP_PROFILE] = profile
-
-    @requires_device
-    def _set_no_ramping_periods(self, periods: int) -> None:
-        self._set_16bit_param(Param.NRAMP_PER, periods)
-
     # -------------------------------------------------------------------------
     # PUBLIC WRITERS (HIGH-LEVEL API)
     # -------------------------------------------------------------------------
@@ -449,6 +426,33 @@ class RemoteWave:
         dac_units = round(1023.5*(amplitude))
         self._set_ampl_w3(dac_units)
 
+    # --- Control ---
+    @requires_device
+    def set_output_mode(self, invert: int) -> None:
+        """Set output to normal or inverted. Only ac-components are inverted."""
+        if invert not in (0, 1):
+            raise ValueError("invert must be 0 (normal) or 1 (inverted)")
+        self.hid_out_pkg[Param.INV_OUTP] = invert
+
+    @requires_device
+    def set_composition(self, envelope: int) -> None:
+        """Set wave composition to additive or modulation."""
+        if envelope not in (0, 1):
+            raise ValueError("envelope must be 0 (additive) or 1 (modulation)")
+        self.hid_out_pkg[Param.ENVELOPE] = envelope
+
+    @requires_device
+    def set_ramping_profile(self, profile: int) -> None:
+        """Set ramping profile."""
+        if profile not in (0, 1):
+            raise ValueError("ramping_profile 0=no ramping, 1=linear ramping, 2=")
+        self.hid_out_pkg[Param.RAMP_PROFILE] = profile
+
+    @requires_device
+    def set_no_ramping_periods(self, periods: int) -> None:
+        """Set the number of ramping periods of the theta wave."""
+        self._set_16bit_param(Param.NRAMP_PER, periods)
+
     @requires_device
     def start(self):
         """Set start command and send package out."""
@@ -459,14 +463,4 @@ class RemoteWave:
     def stop(self):
         """Set stop command and send package out."""
         self._set_cmd_stop()
-        self._send_pkg()    
-
-    @requires_device
-    def inverted(self):
-        """Inverted output wave."""
-        self._set_invert_output(1)
-
-    @requires_device
-    def normal(self):
-        """Non inverted output wave."""
-        self._set_invert_output(0)
+        self._send_pkg()
