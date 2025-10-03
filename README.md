@@ -1,4 +1,4 @@
-# rwave-api - A Python API for rWave - remote wave generator for the neuroConn tDCS.
+# A Python API for rWave: remote wave generator for the neuroConn tDCS.
 
 ## 1. About
 This repository contains the API to communicate with the rWave USB-device, developed by the Research Support group of the faculty of Behavioral and Social Science from the University of Groningen. *rWave* is a wave generator to be used with the remote input from the neuroConn TDCS.
