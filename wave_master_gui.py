@@ -35,6 +35,7 @@ class RemoteWaveMaster:
         self.gamma_mod_depth_var = tk.StringVar(value="100.0")        
         self.gamma_start_var = tk.StringVar(value="0.0")
         self.gamma_stop_var = tk.StringVar(value="180.0")
+        self.ramping_interval_var = tk.StringVar(value="10")
         self.comp_var = tk.IntVar(value=0)  # 0 additive, 1 modulation
         self.invert_var = tk.IntVar(value=0)  # 0 normal, 1 inverted
 
@@ -96,7 +97,8 @@ class RemoteWaveMaster:
          self.gamma_start_var, 0.0, 360.0, self.mywave.write_start_phase_gamma1, "Gamma start")
         make_row("Gamma wave stopping angle (°) [0.0..360.0]:", 
          self.gamma_stop_var, 0.0, 360.0, self.mywave.write_stop_phase_gamma1, "Gamma stop")
-
+        make_row("Ramping interval (s) [0..240]:", 
+         self.ramping_interval_var, 0.0, 240.0, self.mywave.write_ramping_interval, "Ramping interval")
 
         # Checkboxes
         ttk.Checkbutton(frm, text="Wave composition: additive(0) / modulation(1)",
@@ -290,7 +292,7 @@ class RemoteWaveMaster:
             except Exception:
                 pass
             try:
-                self.mywave.write_mdepth_gamma1(float(self.gamma_mdepth_var.get()))
+                self.mywave.write_mdepth_gamma1(float(self.gamma_mod_depth_var.get()))
             except Exception:
                 pass              
             # start/stop phases
@@ -300,6 +302,11 @@ class RemoteWaveMaster:
                 pass
             try:
                 self.mywave.write_stop_phase_gamma1(float(self.gamma_stop_var.get()))
+            except Exception:
+                pass
+            # Ramping interval
+            try:
+                self.mywave.write_ramping_interval(float(self.ramping_interval_var.get()))
             except Exception:
                 pass
             # composition & invert

@@ -64,7 +64,7 @@ class Param(IntEnum):
     INV_OUTP = 43 # byte 43, 0=normal, 1=inverted output polarity
     ENVELOPE = 44 # byte 44, 0=additive, 1=modulation
     RAMP_PROFILE = 45 # byte 45, 0=linear, 1=
-    NRAMP_PER = 46 # byte 46, ramping in whole number of channel 1 periods, 0 is no ramping.    
+    TRAMP_SEC = 46 # byte 46, ramping in whole seconds. 0=no ramping.    
     
 class Command(IntEnum):
     """HID command codes for the rWave device."""
@@ -89,6 +89,8 @@ class RemoteWave:
     CURR_MAX = 4.0
     MDEPTH_MIN = 0
     MDEPTH_MAX = 100.0
+    RMPINTERV_MIN = 0
+    RMPINTERV_MAX = 255
 
     def __init__(self, log_level: int = logging.CRITICAL):
         """Initialize rWave."""
@@ -202,12 +204,11 @@ class RemoteWave:
     # INTERNAL HELPERS (PRIVATE)
     # -------------------------------------------------------------------------
 
-    def _set_16bit_param(self, base: Param, value: int) -> None:
-        """Write a 16-bit int into hid_out_pkg (little-endian)."""
-        if not (0 <= value < 2**16):
-            raise ValueError(f"16-bit value {value} out of range (0..65535)")
+    def _set_8bit_param(self, base: Param, value: int) -> None:
+        """Write a single byte into hid_out_pkg (little-endian)."""
+        if not (0 <= value < 2**8):
+            raise ValueError(f"8-bit value {value} out of range (0..255)")
         self.hid_out_pkg[base] = value & 0xFF
-        self.hid_out_pkg[base + 1] = (value >> 8) & 0xFF
 
     def _set_12bit_param(self, base: Param, value: int) -> None:
         """Write a 12-bit int into hid_out_pkg (little-endian)."""
@@ -215,6 +216,13 @@ class RemoteWave:
             raise ValueError(f"12-bit value {value} out of range (0..4095)")
         self.hid_out_pkg[base] = value & 0xFF
         self.hid_out_pkg[base + 1] = (value >> 8) & 0x0F
+
+    def _set_16bit_param(self, base: Param, value: int) -> None:
+        """Write a 16-bit int into hid_out_pkg (little-endian)."""
+        if not (0 <= value < 2**16):
+            raise ValueError(f"16-bit value {value} out of range (0..65535)")
+        self.hid_out_pkg[base] = value & 0xFF
+        self.hid_out_pkg[base + 1] = (value >> 8) & 0xFF
 
     def _set_32bit_param(self, base: Param, value: int) -> None:
         """Write a 32-bit int into hid_out_pkg (little-endian)."""
@@ -453,6 +461,14 @@ class RemoteWave:
                              ({self.MDEPTH_MIN}..{self.MDEPTH_MAX})")
         mod_index = round(655.35*(mod_depth))
         self._set_mod_index_w2(mod_index)
+
+    @requires_device
+    def write_ramping_interval(self, t_ramp: float) -> None:
+        """Set the ramping interval in seconds."""
+        if not (self.RMPINTERV_MIN <= t_ramp <= self.RMPINTERV_MAX):
+            raise ValueError(f"time intrerval {t_ramp} % out of range \
+                             ({self.RMPINTERV_MIN}..{self.RMPINTERV_MAX})")
+        self._set_8bit_param(Param.TRAMP_SEC, round(t_ramp))
 
     # --- Control ---
     @requires_device
