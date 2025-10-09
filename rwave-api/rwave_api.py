@@ -493,11 +493,6 @@ class RemoteWave:
         self.hid_out_pkg[Param.RAMP_PROFILE] = profile
 
     @requires_device
-    def set_no_ramping_periods(self, periods: int) -> None:
-        """Set the number of ramping periods of the theta wave."""
-        self._set_16bit_param(Param.NRAMP_PER, periods)
-
-    @requires_device
     def start(self):
         """Set start command and send package out."""
         self._set_cmd_start()
