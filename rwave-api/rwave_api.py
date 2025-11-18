@@ -123,7 +123,7 @@ class RemoteWave:
             )
         return found
 
-    def attach(self, matching_key="TinyUSB Device"):
+    def attach(self, matching_key="rWave Device"):
         """Attach rWave device by matching part of its product name."""
         for d in hid.enumerate():
             if matching_key.lower() in (d.get("product_string") or "").lower():

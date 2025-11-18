@@ -35,8 +35,8 @@ class RemoteWaveMaster:
         self.gamma_mod_depth_var = tk.StringVar(value="100.0")        
         self.gamma_start_var = tk.StringVar(value="0.0")
         self.gamma_stop_var = tk.StringVar(value="180.0")
-        self.ramping_interval_var = tk.StringVar(value="10")
-        self.comp_var = tk.IntVar(value=0)  # 0 additive, 1 modulation
+        self.ramping_interval_var = tk.StringVar(value="5")
+        self.comp_var = tk.IntVar(value=1)  # 0 additive, 1 modulation
         self.invert_var = tk.IntVar(value=0)  # 0 normal, 1 inverted
 
         self.status_var = tk.StringVar(value="Device status: -")
@@ -54,6 +54,11 @@ class RemoteWaveMaster:
         frm.grid(row=0, column=0, sticky='NSEW')
         self.root.columnconfigure(0, weight=1)
 
+        style = ttk.Style()
+        style.configure("TLabelframe", borderwidth=2, relief="groove")
+        style.configure("TLabelframe.Label", font=("TkDefaultFont", 10, "bold"))
+
+
         # Device selection
         ttk.Label(frm, text="Select Device:").grid(row=0, column=0, sticky='W')
         self.device_cb = ttk.Combobox(frm, textvariable=self.device_var,
@@ -64,41 +69,67 @@ class RemoteWaveMaster:
         ttk.Button(frm, text="Disconnect", command=self.disconnect).grid(row=0, column=5, padx=5)
 
         # --- Float input fields (labels + entries) ---
+        # --- Grouped parameter frames ---
         row = 1
-        def make_row(label_text, var, vmin, vmax, setter_callable, label):
-            nonlocal row
-            ttk.Label(frm, text=label_text).grid(row=row, column=0, sticky='W', pady=4)
-            ent = ttk.Entry(frm, textvariable=var, width=12)
-            ent.grid(row=row, column=1, sticky='W')
 
-            # Bind Enter and FocusOut
+        # Helper to create rows inside any parent frame
+        def make_row(parent, label_text, var, vmin, vmax, setter_callable, label):
+            r = make_row.counter
+            ttk.Label(parent, text=label_text).grid(row=r, column=0, sticky='W', pady=3, padx=5)
+            ent = ttk.Entry(parent, textvariable=var, width=12)
+            ent.grid(row=r, column=1, sticky='W', pady=3)
+
             def apply_change(event=None):
                 self._on_float_change(var, vmin, vmax, setter_callable, label)
 
             ent.bind("<Return>", apply_change)
             ent.bind("<FocusOut>", apply_change)
 
-            row += 1
+            make_row.counter += 1
             return ent
-        
-        make_row("DC output current (mA) [-4.0..+4.0]:", 
+
+        make_row.counter = 0
+
+        # ---- DC group ----
+        dc_frame = ttk.LabelFrame(frm, text="DC Current Setting", padding=10)
+        dc_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
+        make_row(dc_frame, "DC output current (mA) [-4.0..+4.0]:",
          self.dc_curr_var, -4.0, 4.0, self.mywave.write_dc_current, "DC output current")
-        make_row("Theta wave frequency (Hz) [1.0..20.0]:", 
+        row += 1
+
+        # ---- Theta group ----
+        make_row.counter = 0
+        theta_frame = ttk.LabelFrame(frm, text="Theta Wave Settings", padding=10)
+        theta_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
+        make_row(theta_frame, "Theta wave frequency (Hz) [1.0..20.0]:",
          self.theta_freq_var, 1.0, 20.0, self.mywave.write_freq_theta, "Theta wave frequency")
-        make_row("Theta wave amplitude (mA) [0.0..4.0]:", 
+        make_row(theta_frame, "Theta wave amplitude (mA) [0.0..4.0]:",
          self.theta_ampl_var, 0.0, 4.0, self.mywave.write_ampl_theta, "Theta wave amplitude")
-        make_row("Gamma wave frequency (Hz) [40.0..200.0]:", 
+        row += 1
+
+        # ---- Gamma group ----
+        make_row.counter = 0
+        gamma_frame = ttk.LabelFrame(frm, text="Gamma Wave Settings", padding=10)
+        gamma_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
+        make_row(gamma_frame, "Gamma wave frequency (Hz) [40.0..200.0]:",
          self.gamma_freq_var, 40.0, 200.0, self.mywave.write_freq_gamma1, "Gamma wave frequency")
-        make_row("Gamma wave amplitude (mA) [0.0...4.0]:", 
+        make_row(gamma_frame, "Gamma wave amplitude (mA) [0.0..4.0]:",
          self.gamma_ampl_var, 0.0, 4.0, self.mywave.write_ampl_gamma1, "Gamma wave amplitude")
-        make_row("Gamma wave modulation depth (%) [0.0...100.0]:", 
+        make_row(gamma_frame, "Gamma wave modulation depth (%) [0.0..100.0]:",
          self.gamma_mod_depth_var, 0.0, 100.0, self.mywave.write_mdepth_gamma1, "Gamma wave modulation depth")
-        make_row("Gamma wave starting angle (°) [0.0..360.0]:", 
+        make_row(gamma_frame, "Gamma wave starting angle (°) [0.0..360.0]:",
          self.gamma_start_var, 0.0, 360.0, self.mywave.write_start_phase_gamma1, "Gamma start")
-        make_row("Gamma wave stopping angle (°) [0.0..360.0]:", 
+        make_row(gamma_frame, "Gamma wave stopping angle (°) [0.0..360.0]:",
          self.gamma_stop_var, 0.0, 360.0, self.mywave.write_stop_phase_gamma1, "Gamma stop")
-        make_row("Ramping interval (s) [0..240]:", 
+        row += 1
+
+        # ---- Ramping group ----
+        make_row.counter = 0
+        ramp_frame = ttk.LabelFrame(frm, text="Ramping Setting", padding=10)
+        ramp_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
+        make_row(ramp_frame, "Ramping interval (s) [0..240]:",
          self.ramping_interval_var, 0.0, 240.0, self.mywave.write_ramping_interval, "Ramping interval")
+        row += 1
 
         # Checkboxes
         ttk.Checkbutton(frm, text="Wave composition: additive(0) / modulation(1)",
@@ -120,6 +151,9 @@ class RemoteWaveMaster:
     # Device connect/disconnect
     # -------------------------
     def connect(self):
+        """
+        Attach Device
+        """
         if not self.attached and self.device_var.get():
             try:
                 ok = self.mywave.attach(self.device_var.get())
@@ -135,6 +169,9 @@ class RemoteWaveMaster:
                 messagebox.showerror("Error", f"Connect failed: {e}")
 
     def disconnect(self):
+        """
+        Disconnect Device
+        """
         if self.attached:
             try:
                 self.mywave.close()
