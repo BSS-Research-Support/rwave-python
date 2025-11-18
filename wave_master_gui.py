@@ -7,7 +7,7 @@ from rwave_api import RemoteWave
 class RemoteWaveMaster:
     def __init__(self, root):
         self.root = root
-        self.root.title("Remote Wave Master for neuroConn TDCS")
+        self.root.title("Remote Wave Master for neuroConn TDCS v1.0")
         self.mywave = RemoteWave()
 
         # Scan devices
@@ -39,6 +39,10 @@ class RemoteWaveMaster:
         self.comp_var = tk.IntVar(value=1)  # 0 additive, 1 modulation
         self.invert_var = tk.IntVar(value=0)  # 0 normal, 1 inverted
 
+        # Variables for phases
+        self.theta_phase_var = tk.StringVar(value="0.0")
+        self.gamma_phase_var = tk.StringVar(value="0.0")
+
         self.status_var = tk.StringVar(value="Device status: -")
 
         self._build_widgets()
@@ -52,14 +56,26 @@ class RemoteWaveMaster:
         self._on_comp_change()
 
     def _build_widgets(self):
-        frm = ttk.Frame(self.root, padding="10")
-        frm.grid(row=0, column=0, sticky='NSEW')
+        notebook = ttk.Notebook(self.root)
+        notebook.grid(row=0, column=0, sticky='NSEW')
+
+        # --- Tab 1 (Control panel) ---
+        frm = ttk.Frame(notebook, padding=10)
+        notebook.add(frm, text="Control panel")
+
+        # --- Tab 2 (Phase settings) ---
+        phase_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(phase_frame, text="Phase settings")
+
         self.root.columnconfigure(0, weight=1)
 
         style = ttk.Style()
         style.configure("TLabelframe", borderwidth=2, relief="groove")
         style.configure("TLabelframe.Label", font=("TkDefaultFont", 10, "bold"))
 
+        # -----------------------------
+        # Phase settings tab (tab 1)
+        # -----------------------------
         # Device selection
         ttk.Label(frm, text="Select Device:").grid(row=0, column=0, sticky='W')
         self.device_cb = ttk.Combobox(frm, textvariable=self.device_var,
@@ -69,11 +85,11 @@ class RemoteWaveMaster:
         ttk.Button(frm, text="Connect", command=self.connect).grid(row=0, column=4, padx=5)
         ttk.Button(frm, text="Disconnect", command=self.disconnect).grid(row=0, column=5, padx=5)
 
-        row = 1
+        row_tab1 = 1
 
         # Helper to create rows inside any parent frame
-        def make_row(parent, label_text, var, vmin, vmax, setter_callable, label):
-            r = make_row.counter
+        def make_row_tab1(parent, label_text, var, vmin, vmax, setter_callable, label):
+            r = make_row_tab1.counter
             ttk.Label(parent, text=label_text).grid(row=r, column=0, sticky='W', pady=3, padx=5)
             ent = ttk.Entry(parent, textvariable=var, width=12)
             ent.grid(row=r, column=1, sticky='W', pady=3)
@@ -84,79 +100,120 @@ class RemoteWaveMaster:
             ent.bind("<Return>", apply_change)
             ent.bind("<FocusOut>", apply_change)
 
-            make_row.counter += 1
+            make_row_tab1.counter += 1
             return ent
 
-        make_row.counter = 0
+        make_row_tab1.counter = 0
         # --- Grouped parameter frames ---
         # ---- DC group ----
         dc_frame = ttk.LabelFrame(frm, text="DC Current Setting", padding=10)
-        dc_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
-        make_row(dc_frame, "DC output current (mA) [-4.0..+4.0]:",
+        dc_frame.grid(row=row_tab1, column=0, columnspan=6, sticky='EW', pady=(10,5))
+        make_row_tab1(dc_frame, "DC output current (mA) [-4.0..+4.0]:",
          self.dc_curr_var, -4.0, 4.0, self.mywave.write_dc_current, "DC output current")
-        row += 1
+        row_tab1 += 1
 
         # ---- Theta group ----
-        make_row.counter = 0
+        make_row_tab1.counter = 0
         theta_frame = ttk.LabelFrame(frm, text="Theta Wave Settings", padding=10)
-        theta_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
-        make_row(theta_frame, "Theta wave frequency (Hz) [1.0..20.0]:",
+        theta_frame.grid(row=row_tab1, column=0, columnspan=6, sticky='EW', pady=(10,5))
+        make_row_tab1(theta_frame, "Theta wave frequency (Hz) [1.0..20.0]:",
          self.theta_freq_var, 1.0, 20.0, self.mywave.write_freq_theta, "Theta wave frequency")
-        make_row(theta_frame, "Theta wave amplitude (mA) [0.0..4.0]:",
+        make_row_tab1(theta_frame, "Theta wave amplitude (mA) [0.0..4.0]:",
          self.theta_ampl_var, 0.0, 4.0, self.mywave.write_ampl_theta, "Theta wave amplitude")
-        row += 1
+        row_tab1 += 1
 
         # ---- Gamma group ----
-        make_row.counter = 0
+        make_row_tab1.counter = 0
         gamma_frame = ttk.LabelFrame(frm, text="Gamma Wave Settings", padding=10)
-        gamma_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
-        make_row(gamma_frame, "Gamma wave frequency (Hz) [40.0..200.0]:",
+        gamma_frame.grid(row=row_tab1, column=0, columnspan=6, sticky='EW', pady=(10,5))
+        make_row_tab1(gamma_frame, "Gamma wave frequency (Hz) [40.0..200.0]:",
          self.gamma_freq_var, 40.0, 200.0, self.mywave.write_freq_gamma1, "Gamma wave frequency")
-        #make_row(gamma_frame, "Gamma wave amplitude (mA) [0.0..4.0]:",
-        # self.gamma_ampl_var, 0.0, 4.0, self.mywave.write_ampl_gamma1, "Gamma wave amplitude")
-        self.ent_gamma_ampl = make_row(gamma_frame,
+        self.ent_gamma_ampl = make_row_tab1(gamma_frame,
             "Gamma wave amplitude (mA) [0.0..4.0]:",
             self.gamma_ampl_var, 0.0, 4.0,
             self.mywave.write_ampl_gamma1,
             "Gamma wave amplitude"
         )
-        #make_row(gamma_frame, "Gamma wave modulation depth (%) [0.0..100.0]:",
-        # self.gamma_mod_depth_var, 0.0, 100.0, self.mywave.write_mdepth_gamma1, "Gamma wave modulation depth")
-        self.ent_gamma_mdepth = make_row(gamma_frame,
+        self.ent_gamma_mdepth = make_row_tab1(gamma_frame,
             "Gamma wave modulation depth (%) [0.0..100.0]:",
             self.gamma_mod_depth_var, 0.0, 100.0,
             self.mywave.write_mdepth_gamma1,
             "Gamma wave modulation depth"
         )
-        make_row(gamma_frame, "Gamma wave starting angle (°) [0.0..360.0]:",
-         self.gamma_start_var, 0.0, 360.0, self.mywave.write_start_phase_gamma1, "Gamma start")
-        make_row(gamma_frame, "Gamma wave stopping angle (°) [0.0..360.0]:",
-         self.gamma_stop_var, 0.0, 360.0, self.mywave.write_stop_phase_gamma1, "Gamma stop")
-        row += 1
+        row_tab1 += 1
 
         # ---- Ramping group ----
-        make_row.counter = 0
+        make_row_tab1.counter = 0
         ramp_frame = ttk.LabelFrame(frm, text="Ramping Setting", padding=10)
-        ramp_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
-        make_row(ramp_frame, "Ramping interval (s) [0..240]:",
+        ramp_frame.grid(row=row_tab1, column=0, columnspan=6, sticky='EW', pady=(10,5))
+        make_row_tab1(ramp_frame, "Ramping interval (s) [0..240]:",
          self.ramping_interval_var, 0.0, 240.0, self.mywave.write_ramping_interval, "Ramping interval")
-        row += 1
+        row_tab1 += 1
 
         # Checkboxes
         ttk.Checkbutton(frm, text="Wave composition: additive(0) / modulation(1)",
-                        variable=self.comp_var).grid(row=row, column=0, columnspan=3, sticky='W', pady=6)
-        row += 1
+                        variable=self.comp_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
+        row_tab1 += 1
         ttk.Checkbutton(frm, text="Output invert",
-                        variable=self.invert_var).grid(row=row, column=0, columnspan=3, sticky='W', pady=6)
-        row += 1
+                        variable=self.invert_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
+        row_tab1 += 1
 
         # Buttons Start / Stop
-        ttk.Button(frm, text="Wave update/start", command=self._on_start).grid(row=row, column=0, pady=8)
-        ttk.Button(frm, text="Wave stop", command=self._on_stop).grid(row=row, column=1, pady=8)
-        row += 1
+        ttk.Button(frm, text="Wave update/start", command=self._on_start).grid(row=row_tab1, column=0, pady=8)
+        ttk.Button(frm, text="Wave stop", command=self._on_stop).grid(row=row_tab1, column=1, pady=8)
+        row_tab1 += 1
 
         # Status Label
-        ttk.Label(frm, textvariable=self.status_var).grid(row=row, column=0, columnspan=4, sticky='W', pady=6)
+        ttk.Label(frm, textvariable=self.status_var).grid(row=row_tab1, column=0, columnspan=4, sticky='W', pady=6)
+
+        # -----------------------------
+        # Phase settings tab (TAB 2)
+        # -----------------------------
+        # Vars
+        self.theta_phase_var = tk.StringVar(value="0.0")
+        self.gamma_phase_var = tk.StringVar(value="0.0")
+
+        # Helper for rows inside groups
+        def make_phase_row(parent, label_text, var, vmin, vmax, setter_callable, label, row):
+            ttk.Label(parent, text=label_text).grid(row=row, column=0, sticky='W', pady=4)
+            ent = ttk.Entry(parent, textvariable=var, width=12)
+            ent.grid(row=row, column=1, sticky='W')
+
+            def apply_change(event=None):
+                self._on_float_change(var, vmin, vmax, setter_callable, label)
+
+            ent.bind("<Return>", apply_change)
+            ent.bind("<FocusOut>", apply_change)
+
+            return ent
+
+        # ---- Theta group ----
+        theta_group = ttk.LabelFrame(phase_frame, text="Theta Phase Setting", padding=10)
+        theta_group.grid(row=0, column=0, sticky="EW", pady=(5,10))
+        make_phase_row(
+            theta_group,
+            "Theta wave phase (°) [0..360]:",
+            self.theta_phase_var, 0.0, 360.0,
+            self.mywave.write_phase_theta,
+            "Theta wave phase",
+            row=0
+        )
+
+        # ---- Gamma group ----
+        gamma_group = ttk.LabelFrame(phase_frame, text="Gamma Phase Settings", padding=10)
+        gamma_group.grid(row=1, column=0, sticky="EW", pady=(5,10))
+        make_phase_row(gamma_group, "Gamma wave phase (°) [0..360]:",
+                       self.gamma_phase_var, 0.0, 360.0,
+                       self.mywave.write_phase_gamma1,
+                       "Gamma wave phase", row=0)
+        make_phase_row(gamma_group, "Gamma wave starting angle (°) [0.0..360.0]:",
+                      self.gamma_start_var, 0.0, 360.0,
+                      self.mywave.write_start_phase_gamma1,
+                      "Gamma start", row=2)
+        make_phase_row(gamma_group, "Gamma wave stopping angle (°) [0.0..360.0]:",
+                      self.gamma_stop_var, 0.0, 360.0,
+                      self.mywave.write_stop_phase_gamma1,
+                      "Gamma stop", row=3)        
 
     # -------------------------
     # Device connect/disconnect
@@ -341,6 +398,10 @@ class RemoteWaveMaster:
                 self.mywave.write_ampl_theta(float(self.theta_ampl_var.get()))
             except Exception:
                 pass
+            try:
+                self.mywave.write_phase_theta(float(self.theta_phase_var.get()))
+            except Exception:
+                pass
             # gamma wave
             try:
                 self.mywave.write_freq_gamma1(float(self.gamma_freq_var.get()))
@@ -350,6 +411,10 @@ class RemoteWaveMaster:
                 self.mywave.write_ampl_gamma1(float(self.gamma_ampl_var.get()))
             except Exception:
                 pass
+            try:
+                self.mywave.write_phase_gamma1(float(self.gamma_phase_var.get()))
+            except Exception:
+                pass            
             try:
                 self.mywave.write_mdepth_gamma1(float(self.gamma_mod_depth_var.get()))
             except Exception:
