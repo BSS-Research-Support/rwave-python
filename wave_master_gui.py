@@ -46,8 +46,10 @@ class RemoteWaveMaster:
         # traces for checkboxes
         self.comp_var.trace_add("write", lambda *args: self._on_comp_change())
         self.invert_var.trace_add("write", lambda *args: self._on_invert_change())
-
+        
         self._init_in_progress = False
+        # initialize enabled/disabled fields
+        self._on_comp_change()
 
     def _build_widgets(self):
         frm = ttk.Frame(self.root, padding="10")
@@ -58,7 +60,6 @@ class RemoteWaveMaster:
         style.configure("TLabelframe", borderwidth=2, relief="groove")
         style.configure("TLabelframe.Label", font=("TkDefaultFont", 10, "bold"))
 
-
         # Device selection
         ttk.Label(frm, text="Select Device:").grid(row=0, column=0, sticky='W')
         self.device_cb = ttk.Combobox(frm, textvariable=self.device_var,
@@ -68,8 +69,6 @@ class RemoteWaveMaster:
         ttk.Button(frm, text="Connect", command=self.connect).grid(row=0, column=4, padx=5)
         ttk.Button(frm, text="Disconnect", command=self.disconnect).grid(row=0, column=5, padx=5)
 
-        # --- Float input fields (labels + entries) ---
-        # --- Grouped parameter frames ---
         row = 1
 
         # Helper to create rows inside any parent frame
@@ -89,7 +88,7 @@ class RemoteWaveMaster:
             return ent
 
         make_row.counter = 0
-
+        # --- Grouped parameter frames ---
         # ---- DC group ----
         dc_frame = ttk.LabelFrame(frm, text="DC Current Setting", padding=10)
         dc_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
@@ -113,10 +112,22 @@ class RemoteWaveMaster:
         gamma_frame.grid(row=row, column=0, columnspan=6, sticky='EW', pady=(10,5))
         make_row(gamma_frame, "Gamma wave frequency (Hz) [40.0..200.0]:",
          self.gamma_freq_var, 40.0, 200.0, self.mywave.write_freq_gamma1, "Gamma wave frequency")
-        make_row(gamma_frame, "Gamma wave amplitude (mA) [0.0..4.0]:",
-         self.gamma_ampl_var, 0.0, 4.0, self.mywave.write_ampl_gamma1, "Gamma wave amplitude")
-        make_row(gamma_frame, "Gamma wave modulation depth (%) [0.0..100.0]:",
-         self.gamma_mod_depth_var, 0.0, 100.0, self.mywave.write_mdepth_gamma1, "Gamma wave modulation depth")
+        #make_row(gamma_frame, "Gamma wave amplitude (mA) [0.0..4.0]:",
+        # self.gamma_ampl_var, 0.0, 4.0, self.mywave.write_ampl_gamma1, "Gamma wave amplitude")
+        self.ent_gamma_ampl = make_row(gamma_frame,
+            "Gamma wave amplitude (mA) [0.0..4.0]:",
+            self.gamma_ampl_var, 0.0, 4.0,
+            self.mywave.write_ampl_gamma1,
+            "Gamma wave amplitude"
+        )
+        #make_row(gamma_frame, "Gamma wave modulation depth (%) [0.0..100.0]:",
+        # self.gamma_mod_depth_var, 0.0, 100.0, self.mywave.write_mdepth_gamma1, "Gamma wave modulation depth")
+        self.ent_gamma_mdepth = make_row(gamma_frame,
+            "Gamma wave modulation depth (%) [0.0..100.0]:",
+            self.gamma_mod_depth_var, 0.0, 100.0,
+            self.mywave.write_mdepth_gamma1,
+            "Gamma wave modulation depth"
+        )
         make_row(gamma_frame, "Gamma wave starting angle (°) [0.0..360.0]:",
          self.gamma_start_var, 0.0, 360.0, self.mywave.write_start_phase_gamma1, "Gamma start")
         make_row(gamma_frame, "Gamma wave stopping angle (°) [0.0..360.0]:",
@@ -228,7 +239,18 @@ class RemoteWaveMaster:
     def _on_comp_change(self):
         if self._init_in_progress:
             return
+
         val = int(self.comp_var.get())  # 0 additive, 1 modulation
+        if val == 1:
+            # modulation: amplitude disabled, depth enabled
+            self.ent_gamma_ampl.configure(state="disabled")
+            self.ent_gamma_mdepth.configure(state="normal")
+        else:
+            # additive: amplitude enabled, depth disabled
+            self.ent_gamma_ampl.configure(state="normal")
+            self.ent_gamma_mdepth.configure(state="disabled")
+
+        # existing device-setting logic
         if not self.attached:
             self.status_var.set(f"Device status: not attached (composition={val})")
             return
