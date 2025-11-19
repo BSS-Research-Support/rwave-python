@@ -360,7 +360,7 @@ class RemoteWave:
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
             raise ValueError(f"Phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
-        value = round(phase_angle * (2**16 / 360.0))
+        value = round(phase_angle * ((2**16 - 1) / 360.0))
         self._set_phase_w1(value)
 
     @requires_device
@@ -369,7 +369,7 @@ class RemoteWave:
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
             raise ValueError(f"Phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
-        value = round(phase_angle * (2**16 / 360.0))
+        value = round(phase_angle * ((2**16 - 1) / 360.0))
         self._set_phase_w2(value)
 
     @requires_device
@@ -378,7 +378,7 @@ class RemoteWave:
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
             raise ValueError(f"Phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
-        value = round(phase_angle * (2**16 / 360.0))
+        value = round(phase_angle * ((2**16 - 1) / 360.0))
         self._set_phase_w3(value)
 
     @requires_device
@@ -387,7 +387,7 @@ class RemoteWave:
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
             raise ValueError(f"Start phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
-        value = round(phase_angle * (2**16 / 360.0))
+        value = round(phase_angle * ((2**16 - 1) / 360.0))
         self._set_phase_start_w2(value)
 
     @requires_device
@@ -396,7 +396,7 @@ class RemoteWave:
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
             raise ValueError(f"Start phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
-        value = round(phase_angle * (2**16 / 360.0))
+        value = round(phase_angle * ((2**16 - 1) / 360.0))
         self._set_phase_start_w3(value)
 
     @requires_device
@@ -405,7 +405,7 @@ class RemoteWave:
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
             raise ValueError(f"Stop phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
-        value = round(phase_angle * (2**16 / 360.0))
+        value = round(phase_angle * ((2**16 - 1) / 360.0))
         self._set_phase_stop_w2(value)
 
     @requires_device
@@ -414,7 +414,7 @@ class RemoteWave:
         if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
             raise ValueError(f"Stop phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
-        value = round(phase_angle * (2**16 / 360.0))
+        value = round(phase_angle * ((2**16 - 1)  / 360.0))
         self._set_phase_stop_w3(value)
 
     @requires_device

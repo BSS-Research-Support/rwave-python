@@ -206,11 +206,11 @@ class RemoteWaveMaster:
                        self.gamma_phase_var, 0.0, 360.0,
                        self.mywave.write_phase_gamma1,
                        "Gamma wave phase", row=0)
-        make_phase_row(gamma_group, "Gamma wave starting angle (°) [0.0..360.0]:",
+        make_phase_row(gamma_group, "Gamma wave starting angle (°) [0.0..360]:",
                       self.gamma_start_var, 0.0, 360.0,
                       self.mywave.write_start_phase_gamma1,
                       "Gamma start", row=2)
-        make_phase_row(gamma_group, "Gamma wave stopping angle (°) [0.0..360.0]:",
+        make_phase_row(gamma_group, "Gamma wave stopping angle (°) [0.0..360]:",
                       self.gamma_stop_var, 0.0, 360.0,
                       self.mywave.write_stop_phase_gamma1,
                       "Gamma stop", row=3)        
