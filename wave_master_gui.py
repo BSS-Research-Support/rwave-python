@@ -59,6 +59,25 @@ class RemoteWaveMaster:
         notebook = ttk.Notebook(self.root)
         notebook.grid(row=0, column=0, sticky='NSEW')
 
+        # === Global control bar (always visible) ===
+        bottom = ttk.Frame(self.root, padding=10)
+        bottom.grid(row=1, column=0, sticky='EW')
+
+        # Make both button columns equal width
+        bottom.grid_columnconfigure(0, weight=1, uniform="buttons")
+        bottom.grid_columnconfigure(1, weight=1, uniform="buttons")
+        bottom.grid_columnconfigure(2, weight=3)  # status label expands
+
+        start_btn = ttk.Button(bottom, text="Wave update/start", command=self._on_start)
+        start_btn.grid(row=0, column=0, padx=5, ipadx=10, ipady=10, sticky="EW")
+
+        stop_btn = ttk.Button(bottom, text="Wave stop", command=self._on_stop)
+        stop_btn.grid(row=0, column=1, padx=5, ipadx=10, ipady=10, sticky="EW")
+
+        ttk.Label(bottom, textvariable=self.status_var).grid(
+            row=0, column=2, sticky='W', padx=10
+        )
+
         # --- Tab 1 (Control panel) ---
         frm = ttk.Frame(notebook, padding=10)
         notebook.add(frm, text="Control panel")
@@ -157,14 +176,6 @@ class RemoteWaveMaster:
         ttk.Checkbutton(frm, text="Output invert",
                         variable=self.invert_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
         row_tab1 += 1
-
-        # Buttons Start / Stop
-        ttk.Button(frm, text="Wave update/start", command=self._on_start).grid(row=row_tab1, column=0, pady=8)
-        ttk.Button(frm, text="Wave stop", command=self._on_stop).grid(row=row_tab1, column=1, pady=8)
-        row_tab1 += 1
-
-        # Status Label
-        ttk.Label(frm, textvariable=self.status_var).grid(row=row_tab1, column=0, columnspan=4, sticky='W', pady=6)
 
         # -----------------------------
         # Phase settings tab (TAB 2)
