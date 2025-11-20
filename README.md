@@ -139,6 +139,18 @@ mywave.close()
 
 ```
 
+## rWave Master GUI
+The *rWave Master* control panel:
+![rWM_GUI.png](rWM_GUI.png)
+
+**Usage:**
+* 1. Connect the rWave device to the PC.
+* 2. First open the *Select Device* dropdown menu, select *rWave* and press *Connect*.
+* 3. Change settings and press *Wave update/start* to start generating the wave.
+
+**Description of the input fields:**
+
+
 ## 7. License
 The *rWave-api* API is distributed under the terms of the GNU General Public License 3.
 The full license should be included in the file COPYING, or can be obtained from
