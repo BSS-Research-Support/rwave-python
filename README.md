@@ -140,7 +140,9 @@ mywave.close()
 ```
 
 ## rWave Master GUI
+
 The *rWave Master* control panel:
+
 ![rWM_GUI.png](rWM_GUI.png)
 
 **Usage:**

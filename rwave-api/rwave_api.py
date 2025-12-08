@@ -266,7 +266,7 @@ class RemoteWave:
 
     @requires_device
     def _set_ampl_w1(self, value: int) -> None:
-        self._set_12bit_param(Param.AMPL1_0, value)
+        self._set_16bit_param(Param.AMPL1_0, value)
 
     # --- Wave 2 ---
     @requires_device
@@ -279,7 +279,7 @@ class RemoteWave:
 
     @requires_device
     def _set_ampl_w2(self, value: int) -> None:
-        self._set_12bit_param(Param.AMPL2_0, value)
+        self._set_16bit_param(Param.AMPL2_0, value)
 
     @requires_device
     def _set_mod_index_w2(self, value: int) -> None:
@@ -304,7 +304,7 @@ class RemoteWave:
 
     @requires_device
     def _set_ampl_w3(self, value: int) -> None:
-        self._set_12bit_param(Param.AMPL3_0, value)
+        self._set_16bit_param(Param.AMPL3_0, value)
 
     @requires_device
     def _set_phase_start_w3(self, value: int) -> None:
@@ -324,8 +324,8 @@ class RemoteWave:
         if not (self.CURR_MIN <= current <= self.CURR_MAX):
             raise ValueError(f"DC-current {current} mA out of range \
                              ({self.CURR_MIN}..{self.CURR_MAX})")
-        dac_units = round(511.875*(current+4.0))
-        self._set_dc_offset(dac_units)
+        two_bytes_value = round((current + 4) * 8191.875)
+        self._set_dc_offset(two_bytes_value)
 
     @requires_device
     def write_freq_theta(self, frequency: float) -> None:
@@ -411,7 +411,7 @@ class RemoteWave:
     @requires_device
     def write_stop_phase_gamma2(self, phase_angle: float) -> None:
         """Set stop phase of gamma2 in degrees of theta."""
-        if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
+        if not (self.PHASE_MIN <= phase_dc_offsetangle <= self.PHASE_MAX):
             raise ValueError(f"Stop phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
         value = round(phase_angle * ((2**16 - 1)  / 360.0))
@@ -423,8 +423,8 @@ class RemoteWave:
         if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
             raise ValueError(f"theta wave amplitude {amplitude} mA out of range \
                              ({self.AMPL_MIN}..{self.AMPL_MAX})")
-        dac_units = round(511.75*(amplitude))
-        self._set_ampl_w1(dac_units)
+        two_bytes_value = round(amplitude * (2**16 - 1) / 4.0)
+        self._set_ampl_w1(two_bytes_value)
 
     @requires_device
     def write_ampl_gamma1(self, amplitude: float) -> None:
@@ -432,8 +432,8 @@ class RemoteWave:
         if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
             raise ValueError(f"gamma1 wave amplitude {amplitude} mA out of range \
                              ({self.AMPL_MIN}..{self.AMPL_MAX})")
-        dac_units = round(511.75*(amplitude))
-        self._set_ampl_w2(dac_units)
+        two_bytes_value = round(amplitude * (2**16 - 1) / 4.0)
+        self._set_ampl_w2(two_bytes_value)
 
     @requires_device
     def write_ampl_gamma2(self, amplitude: float) -> None:
@@ -441,8 +441,8 @@ class RemoteWave:
         if not (self.AMPL_MIN <= amplitude <= self.AMPL_MAX):
             raise ValueError(f"gamma2 wave amplitude {amplitude} mA out of range \
                              ({self.AMPL_MIN}..{self.AMPL_MAX})")
-        dac_units = round(511.75*(amplitude))
-        self._set_ampl_w3(dac_units)
+        two_bytes_value = round(amplitude * (2**16 - 1) / 4.0)
+        self._set_ampl_w3(two_bytes_value)
 
     @requires_device
     def write_mdepth_gamma1(self, mod_depth: float) -> None:
@@ -450,8 +450,8 @@ class RemoteWave:
         if not (self.MDEPTH_MIN <= mod_depth <= self.MDEPTH_MAX):
             raise ValueError(f"gamma1 modulation depth {mod_depth} % out of range \
                              ({self.MDEPTH_MIN}..{self.MDEPTH_MAX})")
-        dac_units = round(655.35*(mod_depth))
-        self._set_mod_index_w2(dac_units)
+        two_bytes_value = round(655.35*(mod_depth))
+        self._set_mod_index_w2(two_bytes_value)
 
     @requires_device
     def write_mdepth_gamma2(self, mod_depth: float) -> None:
