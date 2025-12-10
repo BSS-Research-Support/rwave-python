@@ -7,7 +7,7 @@ from rwave_api import RemoteWave
 class RemoteWaveMaster:
     def __init__(self, root):
         self.root = root
-        self.root.title("Remote Wave Master for neuroConn TDCS v1.0")
+        self.root.title("Remote Wave Master for neuroConn TDCS v1.1")
         self.mywave = RemoteWave()
 
         # Scan devices

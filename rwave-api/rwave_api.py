@@ -1,3 +1,17 @@
+""" Python API for the rWave generatator
+
+    hardware version: 1.0
+    
+    API version: 1.1
+    date: 10-12-2025
+    
+    change list:
+    
+    API version 1.1
+        - 16-bit setters for ampl_theta, ampl_gamma1 and ampl_gamma2.
+
+"""
+
 import sys
 import time
 import logging
@@ -15,6 +29,7 @@ def requires_device(func):
             return False
         return func(self, *args, **kwargs)
     return wrapper
+
 
 class Param(IntEnum):
     """HID byte interpretations from the rWave device."""
