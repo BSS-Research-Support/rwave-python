@@ -1,7 +1,7 @@
 # A Python API for rWave: remote wave generator for the neuroConn tDCS.
 
 ## 1. About
-This repository contains the API to communicate with the rWave USB-device, developed by the Research Support group of the faculty of Behavioral and Social Science from the University of Groningen. *rWave* is a wave generator to be used with the remote input from the neuroConn TDCS.
+This repository contains the API to communicate with the rWave USB-device, developed by the Research Support group of the faculty of Behavioral and Social Science from the University of Groningen. *rWave* is an external wave generator to be used with the remote input of the neuroConn TDCS.
 
 ## 2. Dependencies
 The *rwave-api* API uses [HIDAPI](https://pypi.org/project/hidapi/), a cython module to communicate with HID-class USB devices.
@@ -41,6 +41,7 @@ The RemoteWave class provides a Python interface for controlling the rWave devic
 Public methods are organized into frequency, phase, amplitude, and control APIs.
 
 ### Frequency Control
+
 ```
 write_freq_theta(frequency: float) -> None
 Set the frequency of the theta wave in Hz.
@@ -59,6 +60,7 @@ Range: FREQ_MIN ≤ frequency ≤ FREQ_MAX.
 ```
 
 ### Phase Control
+
 ```
 write_phase_theta(phase_angle: float) -> None
 Set the phase angle of the theta wave in degrees.
@@ -80,9 +82,13 @@ Set the start phase of gamma1 relative to theta, in degrees.
 
 write_start_phase_gamma2(phase_angle: float) -> None
 Set the start phase of gamma2 relative to theta, in degrees.
+
+write_trigger_phase(phase_angle: float) -> None
+Set the phase of the trigger output pulse relative to the theta wave, in degrees.
 ```
 
 ### Amplitude Control
+
 ```
 (if you expose them — otherwise these remain internal)
 
@@ -99,6 +105,7 @@ Set amplitude for the gamma2 wave.
 ```
 
 ### Device & Output Control
+
 ```
 open_device() -> None
 Open connection to the rWave device.
