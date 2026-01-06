@@ -7,7 +7,7 @@ from rwave_api import RemoteWave
 class RemoteWaveMaster:
     def __init__(self, root):
         self.root = root
-        self.root.title("Remote Wave Master for neuroConn TDCS v1.1")
+        self.root.title("Remote Wave Master for neuroConn TDCS v1.2")
         self.mywave = RemoteWave()
 
         # Scan devices
@@ -29,19 +29,20 @@ class RemoteWaveMaster:
         self.device_var = tk.StringVar()
         self.dc_curr_var = tk.StringVar(value="0.0")
         self.theta_freq_var = tk.StringVar(value="6.0")
-        self.theta_ampl_var = tk.StringVar(value="1.0")
+        self.theta_ampl_var = tk.StringVar(value="2.0")
         self.gamma_freq_var = tk.StringVar(value="80.0")
-        self.gamma_ampl_var = tk.StringVar(value="0.5")
+        self.gamma_ampl_var = tk.StringVar(value="0")
         self.gamma_mod_depth_var = tk.StringVar(value="100.0")        
         self.gamma_start_var = tk.StringVar(value="0.0")
         self.gamma_stop_var = tk.StringVar(value="180.0")
-        self.ramping_interval_var = tk.StringVar(value="5")
-        self.comp_var = tk.IntVar(value=1)  # 0 additive, 1 modulation
+        self.ramping_interval_var = tk.StringVar(value="3")
+        self.comp_var = tk.IntVar(value=0)  # 0 additive, 1 modulation
         self.invert_var = tk.IntVar(value=0)  # 0 normal, 1 inverted
 
         # Variables for phases
         self.theta_phase_var = tk.StringVar(value="0.0")
         self.gamma_phase_var = tk.StringVar(value="0.0")
+        self.trigger_phase_var = tk.StringVar(value="0.0")
 
         self.status_var = tk.StringVar(value="Device status: -")
 
@@ -93,9 +94,9 @@ class RemoteWaveMaster:
         style.configure("TLabelframe.Label", font=("TkDefaultFont", 10, "bold"))
 
         # -----------------------------
-        # Phase settings tab (tab 1)
+        # Control settings tab (TAB 1)
         # -----------------------------
-        # Device selection
+        # --- Device selection ---
         ttk.Label(frm, text="Select Device:").grid(row=0, column=0, sticky='W')
         self.device_cb = ttk.Combobox(frm, textvariable=self.device_var,
                                       values=self.device_entries, state="readonly",
@@ -180,10 +181,6 @@ class RemoteWaveMaster:
         # -----------------------------
         # Phase settings tab (TAB 2)
         # -----------------------------
-        # Vars
-        self.theta_phase_var = tk.StringVar(value="0.0")
-        self.gamma_phase_var = tk.StringVar(value="0.0")
-
         # Helper for rows inside groups
         def make_phase_row(parent, label_text, var, vmin, vmax, setter_callable, label, row):
             ttk.Label(parent, text=label_text).grid(row=row, column=0, sticky='W', pady=4)
@@ -225,6 +222,18 @@ class RemoteWaveMaster:
                       self.gamma_stop_var, 0.0, 360.0,
                       self.mywave.write_stop_phase_gamma1,
                       "Gamma stop", row=3)        
+
+        # ---- Trigger group ----
+        trigger_group = ttk.LabelFrame(phase_frame, text="Trigger Phase Setting", padding=10)
+        trigger_group.grid(row=2, column=0, sticky="EW", pady=(5,10))
+        make_phase_row(
+            trigger_group,
+            "Trigger phase (°) [0..360]:",
+            self.trigger_phase_var, 0.0, 360.0,
+            self.mywave.write_trigger_phase,
+            "Trigger phase",
+            row=0
+        )
 
     # -------------------------
     # Device connect/disconnect
@@ -439,6 +448,11 @@ class RemoteWaveMaster:
                 self.mywave.write_stop_phase_gamma1(float(self.gamma_stop_var.get()))
             except Exception:
                 pass
+            # trigger phase
+            try:
+                self.mywave.write_trigger_phase(float(self.trigger_phase_var.get()))
+            except Exception:
+                pass            
             # Ramping interval
             try:
                 self.mywave.write_ramping_interval(float(self.ramping_interval_var.get()))

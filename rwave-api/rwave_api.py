@@ -75,11 +75,13 @@ class Param(IntEnum):
     PH3_START_0 = 39 # byte 39, 16 bit start phase (lsb) for channel 3 in units of PH1
     PH3_START_1 = 40 # byte 40, 16 bit start phase (msb) for channel 3 in units of PH1
     PH3_STOP_0 = 41 # byte 41, 16 bit stop phase (lsb) for channel 3 in units of PH1
-    PH3_STOP_1 = 42 # byte 42, 16 bit stop phase (msb) for channel 3 in units of PH1		
+    PH3_STOP_1 = 42 # byte 42, 16 bit stop phase (msb) for channel 3 in units of PH1
     INV_OUTP = 43 # byte 43, 0=normal, 1=inverted output polarity
     ENVELOPE = 44 # byte 44, 0=additive, 1=modulation
     RAMP_PROFILE = 45 # byte 45, 0=linear, 1=
-    TRAMP_SEC = 46 # byte 46, ramping in whole seconds. 0=no ramping.    
+    TRAMP_SEC = 46 # byte 46, ramping in whole seconds. 0=no ramping.
+    TRG_PHASE_0 = 47 # byte 47, 16 bit phase offset (lsb), trigger
+    TRG_PHASE_1 = 48 # byte 48, 16 bit phase offset (msb), trigger
     
 class Command(IntEnum):
     """HID command codes for the rWave device."""
@@ -329,6 +331,11 @@ class RemoteWave:
     def _set_phase_stop_w3(self, value: int) -> None:
         self._set_16bit_param(Param.PH3_STOP_0, value)
 
+    # --- Trigger out ---
+    @requires_device
+    def _set_phase_trigger(self, value: int) -> None:
+        self._set_16bit_param(Param.TRG_PHASE_0, value)    
+
     # -------------------------------------------------------------------------
     # PUBLIC WRITERS (HIGH-LEVEL API)
     # -------------------------------------------------------------------------
@@ -426,7 +433,7 @@ class RemoteWave:
     @requires_device
     def write_stop_phase_gamma2(self, phase_angle: float) -> None:
         """Set stop phase of gamma2 in degrees of theta."""
-        if not (self.PHASE_MIN <= phase_dc_offsetangle <= self.PHASE_MAX):
+        if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
             raise ValueError(f"Stop phase {phase_angle}° out of range \
                              ({self.PHASE_MIN}..{self.PHASE_MAX})")
         value = round(phase_angle * ((2**16 - 1)  / 360.0))
@@ -484,6 +491,15 @@ class RemoteWave:
             raise ValueError(f"time intrerval {t_ramp} % out of range \
                              ({self.RMPINTERV_MIN}..{self.RMPINTERV_MAX})")
         self._set_8bit_param(Param.TRAMP_SEC, round(t_ramp))
+
+    @requires_device
+    def write_trigger_phase(self, phase_angle: float) -> None:
+        """Set phase angle for the trigger output in degrees."""
+        if not (self.PHASE_MIN <= phase_angle <= self.PHASE_MAX):
+            raise ValueError(f"Phase {phase_angle}° out of range \
+                             ({self.PHASE_MIN}..{self.PHASE_MAX})")
+        two_bytes_value = round(phase_angle * ((2**16 - 1) / 360.0))
+        self._set_phase_trigger(two_bytes_value)        
 
     # --- Control ---
     @requires_device
