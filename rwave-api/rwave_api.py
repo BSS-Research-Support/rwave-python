@@ -511,16 +511,16 @@ class RemoteWave:
 
     @requires_device
     def set_composition(self, envelope: int) -> None:
-        """Set wave composition to additive or modulation."""
+        """Set the wave composition to additive or modulation."""
         if envelope not in (0, 1):
             raise ValueError("envelope must be 0 (additive) or 1 (modulation)")
         self.hid_out_pkg[Param.ENVELOPE] = envelope
 
     @requires_device
     def set_ramping_profile(self, profile: int) -> None:
-        """Set ramping profile."""
+        """Set the ramping profile."""
         if profile not in (0, 1):
-            raise ValueError("ramping_profile 0=no ramping, 1=linear ramping, 2=")
+            raise ValueError("ramping_profile 0=linear, 1=exponential")
         self.hid_out_pkg[Param.RAMP_PROFILE] = profile
 
     @requires_device

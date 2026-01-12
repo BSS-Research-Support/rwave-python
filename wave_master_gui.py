@@ -38,6 +38,7 @@ class RemoteWaveMaster:
         self.ramping_interval_var = tk.StringVar(value="3")
         self.comp_var = tk.IntVar(value=0)  # 0 additive, 1 modulation
         self.invert_var = tk.IntVar(value=0)  # 0 normal, 1 inverted
+        self.ramp_var = tk.IntVar(value=0)  # 0 linear, 1 exponential
 
         # Variables for phases
         self.theta_phase_var = tk.StringVar(value="0.0")
@@ -51,6 +52,7 @@ class RemoteWaveMaster:
         # traces for checkboxes
         self.comp_var.trace_add("write", lambda *args: self._on_comp_change())
         self.invert_var.trace_add("write", lambda *args: self._on_invert_change())
+        self.ramp_var.trace_add("write", lambda *args: self._on_ramp_change())
         
         self._init_in_progress = False
         # initialize enabled/disabled fields
@@ -171,11 +173,14 @@ class RemoteWaveMaster:
         row_tab1 += 1
 
         # Checkboxes
-        ttk.Checkbutton(frm, text="Wave composition: additive(0) / modulation(1)",
+        ttk.Checkbutton(frm, text="Wave composition: additive(off) / modulation(on)",
                         variable=self.comp_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
         row_tab1 += 1
         ttk.Checkbutton(frm, text="Output invert",
                         variable=self.invert_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
+        row_tab1 += 1
+        ttk.Checkbutton(frm, text="Ramping profile: linear(off) / exponential(on)",
+                        variable=self.ramp_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
         row_tab1 += 1
 
         # -----------------------------
@@ -351,6 +356,20 @@ class RemoteWaveMaster:
         except Exception as e:
             self.status_var.set("Device status: failed to set invert")
             messagebox.showerror("Error", f"Failed to set output invert: {e}")
+            
+    def _on_ramp_change(self):
+        if self._init_in_progress:
+            return
+        val = int(self.ramp_var.get())  # 0 linear, 1 exponential
+        if not self.attached:
+            self.status_var.set(f"Device status: not attached (invert={val})")
+            return
+        try:
+            self.mywave.set_ramping_profile(val)
+            self.status_var.set(f"Device status: set ramping profile")
+        except Exception as e:
+            self.status_var.set("Device status: failed to set the ramping profile")
+            messagebox.showerror("Error", f"Failed to set the ramping profile: {e}")            
 
     # -------------------------
     # Start / Stop wave handling
@@ -467,6 +486,10 @@ class RemoteWaveMaster:
                 self.mywave.set_output_mode(int(self.invert_var.get()))
             except Exception:
                 pass
+            try:
+                self.mywave.set_ramping_profile(int(self.ramp_var.get()))
+            except Exception:
+                pass            
             self.status_var.set("Device status: synced")
         except Exception as e:
             self.status_var.set(f"Device status: sync failed ({e})")
