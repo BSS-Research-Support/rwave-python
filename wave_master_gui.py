@@ -173,13 +173,13 @@ class RemoteWaveMaster:
         row_tab1 += 1
 
         # Checkboxes
-        ttk.Checkbutton(frm, text="Wave composition: additive(off) / modulation(on)",
+        ttk.Checkbutton(frm, text="Wave composition: superposition (off) / modulation (on)",
                         variable=self.comp_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
         row_tab1 += 1
-        ttk.Checkbutton(frm, text="Output invert",
+        ttk.Checkbutton(frm, text="Output polarity: TGP (off) / TGT (on)",
                         variable=self.invert_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
         row_tab1 += 1
-        ttk.Checkbutton(frm, text="Ramping profile: linear(off) / exponential(on)",
+        ttk.Checkbutton(frm, text="Ramping profile: linear (off) / exponential (on)",
                         variable=self.ramp_var).grid(row=row_tab1, column=0, columnspan=3, sticky='W', pady=6)
         row_tab1 += 1
 
