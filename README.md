@@ -1,13 +1,12 @@
 # A Python API for rWave: remote wave generator for the neuroConn tDCS.
 
 ## 1. About
-This repository contains the API to communicate with the rWave USB-device, developed by the Research Support group of the faculty of Behavioral and Social Science from the University of Groningen. *rWave* is an external wave generator to be used with the remote input of the neuroConn TDCS.
+This repository contains the API to communicate with the rWave USB-device, developed by the Research Support group of the faculty of Behavioral and Social Science from the University of Groningen. *rWave* is an external wave generator to be used with the remote input of the neuroConn tDCS.
 
 ## 2. Dependencies
 The *rwave-api* API uses [HIDAPI](https://pypi.org/project/hidapi/), a cython module to communicate with HID-class USB devices.
 
-
-## 4. Device Permission for Linux
+## 3. Device Permission for Linux
 Permission for using rWave (HID) device should be added to udev rules by adding the next line:
 
 `SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", ATTRS{idProduct}=="4004", GROUP="plugdev", MODE="0660"`
@@ -23,11 +22,11 @@ If this is not the case, add the user to the `plugdev` group by typing:
 `$ sudo usermod -a -G plugdev username`
 
 
-## 5. RemoteWave API Summary
+## 4. RemoteWave API Summary
 The RemoteWave class provides a Python interface for controlling the rWave device via USB HID.
 Public methods are organized into frequency, phase, amplitude, and control APIs.
 
-### Frequency Control
+### 4.1 Frequency Control
 
 ```
 write_freq_theta(frequency: float) -> None
@@ -46,7 +45,7 @@ Set the frequency of the gamma2 wave in Hz.
 Range: FREQ_MIN ≤ frequency ≤ FREQ_MAX.
 ```
 
-### Phase Control
+### 4.2 Phase Control
 
 ```
 write_phase_theta(phase_angle: float) -> None
@@ -74,7 +73,7 @@ write_trigger_phase(phase_angle: float) -> None
 Set the phase of the trigger output pulse relative to the theta wave, in degrees.
 ```
 
-### Amplitude Control
+### 4.3 Amplitude Control
 
 ```
 (if you expose them — otherwise these remain internal)
@@ -91,7 +90,7 @@ write_ampl_gamma2(amplitude: int) -> None
 Set amplitude for the gamma2 wave.
 ```
 
-### Device & Output Control
+### 4.4 Device & Output Control
 
 ```
 open_device() -> None
@@ -110,7 +109,7 @@ send_params() -> None
 Send the current parameter buffer (hid_out_pkg) to the device.
 ```
 
-## 6. Python coding examples
+## 5. Python coding examples
 
 ```
 from rwave_api import RemoteWave
@@ -133,7 +132,7 @@ mywave.close()
 
 ```
 
-## rWave Master GUI
+## 6.0 rWave Master GUI
 
 The *rWave Master* control panel:
 
@@ -145,7 +144,7 @@ The *rWave Master* control panel:
 * 3. Change settings and press *Wave update/start* to start generating the wave.
 
 **Description of the input fields:**
-
+(to be continued...)
 
 ## 7. License
 The *rWave-api* API is distributed under the terms of the GNU General Public License 3.
