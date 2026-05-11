@@ -6,24 +6,11 @@ This repository contains the API to communicate with the rWave USB-device, devel
 ## 2. Dependencies
 The *rwave-api* API uses [HIDAPI](https://pypi.org/project/hidapi/), a cython module to communicate with HID-class USB devices.
 
-## 3. Install
-Install *rwave-api* (and hidapi) with:
-
-`pip install rwavepy` or
-
-`pip install --user rwavepy` on managed computers.
 
 ## 4. Device Permission for Linux
-Permission for using EVT (HID) devices should be given by adding the next lines to a file, for example named:
+Permission for using rWave (HID) device should be added to udev rules by adding the next line:
 
-`99-evt-devices.rules` in `/etc/udev/rules.d`:
-
-```
-# /etc/udev/rules.d/99-evt-devices.rules
-
-# All EVT devices
-SUBSYSTEM=="usb", ATTR{idVendor}=="cafe", MODE="0660", GROUP="plugdev"
-```
+`SUBSYSTEM=="usb", ATTRS{idVendor}=="cafe", ATTRS{idProduct}=="4004", GROUP="plugdev", MODE="0660"`
 
 The user should be a member of the `plugdev` -group.
 
@@ -35,8 +22,8 @@ If this is not the case, add the user to the `plugdev` group by typing:
 
 `$ sudo usermod -a -G plugdev username`
 
-## 5. RemoteWave API Summary
 
+## 5. RemoteWave API Summary
 The RemoteWave class provides a Python interface for controlling the rWave device via USB HID.
 Public methods are organized into frequency, phase, amplitude, and control APIs.
 

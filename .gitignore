@@ -4,6 +4,7 @@ __pycache__/
 *.txt
 
 # Distribution packaging
+.toml
 .pypirc
 build/
 dist/
